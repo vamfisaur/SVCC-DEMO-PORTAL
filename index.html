@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SVCC Student Portal — Demo System</title>
+<style>
+:root{
+  --maroon:#7A1B2D; --maroon-dark:#5A1220; --gold:#F2B705; --gold-dark:#D69E00;
+  --white:#FFFFFF; --grey-bg:#F3F1EF; --grey-line:#DEDAD5; --grey-text:#5B5650; --ink:#2A2422;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme: light;
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+body{margin:0;height:100%;font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:var(--grey-bg);color:var(--ink);}
+h1,h2,h3{font-family:Georgia,'Times New Roman',serif;margin:0 0 6px;}
+button{font-family:inherit;cursor:pointer;}
+input,select{font-family:inherit;}
+
+/* LOGIN */
+#login{min-height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--gold),var(--white) 65%);padding:24px;}
+.login-card{background:var(--white);width:100%;max-width:380px;border-radius:10px;padding:32px 28px;box-shadow:0 20px 50px rgba(0,0,0,.35);border-top:5px solid var(--gold);}
+.login-card h1{color:var(--maroon);font-size:1.4rem;}
+.logo-upload{position:relative;width:74px;height:74px;margin:0 auto 14px;}
+.logo-circle{width:74px;height:74px;border-radius:50%;background:var(--maroon);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;letter-spacing:.5px;border:3px solid var(--gold);}
+.logo-img{width:74px;height:74px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);display:block;cursor:pointer;}
+.logo-edit{position:absolute;bottom:-2px;right:-2px;width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--maroon-dark);display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:pointer;border:2px solid var(--white);}
+.hide-input{display:none;}
+.login-card p.sub{color:var(--grey-text);font-size:.85rem;margin-bottom:20px;}
+.demo-badge{display:block;text-align:center;background:#FBF3D6;color:var(--maroon);border:1px solid #E8CF7A;border-radius:6px;padding:7px 8px;margin:-6px 0 16px;font-size:.68rem;font-weight:800;letter-spacing:.3px;}
+.role-toggle{display:flex;border:1px solid var(--grey-line);border-radius:8px;overflow:hidden;margin-bottom:18px;}
+.role-toggle button{flex:1;padding:10px;border:none;background:var(--white);color:var(--grey-text);font-weight:600;font-size:.85rem;}
+.role-toggle button.active{background:var(--gold);color:var(--maroon-dark);}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.78rem;color:var(--grey-text);margin-bottom:4px;}
+.field input{width:100%;padding:10px 12px;border:1px solid var(--grey-line);border-radius:7px;font-size:.9rem;}
+.field input:focus{outline:2px solid var(--gold);border-color:var(--gold);}
+.btn-primary{width:100%;padding:12px;background:var(--maroon);color:var(--white);border:none;border-radius:7px;font-weight:700;font-size:.9rem;letter-spacing:.3px;}
+.btn-primary:hover{background:var(--maroon-dark);}
+.login-hint{margin-top:14px;font-size:.75rem;color:var(--grey-text);text-align:center;}
+.err{color:#B3261E;font-size:.8rem;margin:-6px 0 12px;display:none;}
+.remember{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--grey-text);margin-bottom:16px;}
+.remember input{width:auto;}
+.login-links{margin-top:16px;text-align:center;}
+.login-links a{display:block;font-size:.8rem;color:var(--maroon);text-decoration:none;font-weight:600;margin-bottom:8px;}
+.login-links a:hover{text-decoration:underline;}
+.login-links span{font-size:.72rem;color:var(--grey-text);}
+
+/* APP SHELL */
+#app{display:none;min-height:100%;}
+.shell{display:flex;min-height:100%;}
+.sidebar{width:220px;background:var(--white);color:var(--ink);flex-shrink:0;display:flex;flex-direction:column;padding:18px 0;border-right:1px solid var(--grey-line);}
+.brand{padding:0 18px 18px;border-bottom:3px solid var(--gold);margin-bottom:10px;}
+.brand-row{display:flex;align-items:center;gap:10px;}
+.brand-logo-circle{width:36px;height:36px;border-radius:50%;background:var(--maroon);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.65rem;flex-shrink:0;}
+.brand-logo-img{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.brand h1{color:var(--maroon);font-size:1.05rem;line-height:1.25;}
+.brand span{font-size:.7rem;color:var(--grey-text);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 18px;font-size:.85rem;color:var(--ink);border-left:3px solid transparent;}
+.nav-item:hover{background:#FBF3D6;}
+.nav-item.active{background:#FBF3D6;border-left-color:var(--gold-dark);color:var(--maroon);font-weight:600;}
+.nav-icon{width:18px;text-align:center;}
+.logout-wrap{margin-top:auto;padding:14px 18px 0;border-top:1px solid var(--grey-line);}
+.logout-wrap button{width:100%;background:transparent;border:1px solid var(--grey-line);color:var(--maroon);padding:8px;border-radius:6px;font-size:.8rem;}
+.main{flex:1;min-width:0;}
+.topbar{background:var(--white);border-bottom:1px solid var(--grey-line);padding:14px 26px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;}
+.topbar h2{font-size:1.15rem;color:var(--maroon);}
+.userchip{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--grey-text);}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--gold);color:var(--maroon);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;}
+.content{padding:22px 26px 50px;max-width:1000px;}
+.hide{display:none !important;}
+
+.card{background:var(--white);border:1px solid var(--grey-line);border-radius:10px;padding:18px 20px;margin-bottom:16px;}
+.card h3{color:var(--maroon);font-size:1rem;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+.stat{background:var(--white);border:1px solid var(--grey-line);border-left:4px solid var(--gold);border-radius:8px;padding:14px 16px;}
+.stat .num{font-size:1.5rem;font-weight:700;color:var(--maroon);}
+.stat .lbl{font-size:.78rem;color:var(--grey-text);}
+table{width:100%;border-collapse:collapse;font-size:.85rem;}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--grey-line);}
+th{color:var(--grey-text);font-size:.75rem;text-transform:uppercase;letter-spacing:.4px;}
+.badge{padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700;}
+.b-green{background:#E4F3E6;color:#2E7D32;}
+.b-amber{background:#FDF1D6;color:#8A6300;}
+.b-red{background:#FBE4E1;color:#B3261E;}
+.b-maroon{background:#F3DEE2;color:var(--maroon);}
+.row-flex{display:flex;gap:10px;flex-wrap:wrap;}
+.btn{padding:9px 16px;border-radius:7px;border:1px solid var(--grey-line);background:var(--white);font-size:.82rem;font-weight:600;color:var(--ink);}
+.btn.gold{background:var(--gold);border-color:var(--gold-dark);color:var(--maroon-dark);}
+.btn.maroon{background:var(--maroon);border-color:var(--maroon-dark);color:var(--white);}
+.evt{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--grey-line);}
+.evt .date{width:52px;flex-shrink:0;text-align:center;background:var(--grey-bg);border-radius:7px;padding:6px 0;}
+.evt .date b{display:block;color:var(--maroon);font-size:1.05rem;}
+.evt .date span{font-size:.65rem;color:var(--grey-text);text-transform:uppercase;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-row.full{grid-template-columns:1fr;}
+label.small{display:block;font-size:.78rem;color:var(--grey-text);margin-bottom:4px;}
+select,.form-row input{width:100%;padding:9px 10px;border:1px solid var(--grey-line);border-radius:7px;font-size:.85rem;}
+.lf-item{border:1px solid var(--grey-line);border-radius:8px;padding:12px 14px;margin-bottom:10px;}
+.lf-item .meta{font-size:.75rem;color:var(--grey-text);margin-top:3px;}
+.empty{color:var(--grey-text);font-size:.85rem;padding:14px 0;}
+.progress-bar{height:8px;background:var(--grey-bg);border-radius:6px;overflow:hidden;margin:8px 0 4px;}
+.progress-fill{height:100%;background:var(--gold);}
+.sched-grid{display:grid;grid-template-columns:70px repeat(5,1fr);gap:1px;background:var(--grey-line);border:1px solid var(--grey-line);border-radius:8px;overflow:hidden;font-size:.72rem;}
+.sched-grid .cell{background:var(--white);padding:7px 5px;min-height:38px;}
+.sched-grid .head{background:var(--maroon);color:var(--white);font-weight:700;text-align:center;}
+.sched-grid .time{background:var(--grey-bg);color:var(--grey-text);font-weight:600;display:flex;align-items:center;justify-content:center;}
+.sched-grid .cls{background:#F3DEE2;color:var(--maroon-dark);border-radius:5px;padding:4px 5px;font-weight:600;line-height:1.25;}
+.modal-overlay{position:fixed;inset:0;background:rgba(42,36,34,.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+.modal-box{background:var(--white);width:100%;max-width:620px;max-height:85vh;overflow-y:auto;border-radius:10px;padding:20px 22px;border-top:5px solid var(--gold);}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.modal-head h3{color:var(--maroon);}
+.modal-close{background:none;border:none;font-size:1.1rem;color:var(--grey-text);padding:4px 8px;}
+.modal-close:hover{color:var(--maroon);}
+.student-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+
+@media (max-width:720px){
+  .shell{flex-direction:column;}
+  .sidebar{width:100%;flex-direction:row;overflow-x:auto;padding:10px;}
+  .brand,.logout-wrap{display:none;}
+  .nav-item{border-left:none;border-bottom:3px solid transparent;white-space:nowrap;}
+  .nav-item.active{border-left:none;border-bottom-color:var(--gold);}
+  .content{padding:16px;}
+  .form-row{grid-template-columns:1fr;}
+  .sched-grid{font-size:.62rem;}
+}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-card">
+    <div class="logo-upload" id="loginLogoWrap">
+      <img id="loginLogoImg" class="logo-img" alt="St. Vincent College of Cabuyao logo">
+    </div>
+    <h1>St. Vincent College of Cabuyao</h1>
+    <p class="sub">Student &amp; Admin Portal — Demo System for Survey</p>
+    <div class="demo-badge">DEMO SYSTEM • FOR SURVEY / PRESENTATION ONLY</div>
+    <div class="role-toggle">
+      <button id="roleStudentBtn" class="active" onclick="setRole('student')">Student</button>
+      <button id="roleAdminBtn" onclick="setRole('admin')">Admin</button>
+    </div>
+    <div class="field"><label>Username</label><input id="loginUser" placeholder="Enter username"></div>
+    <div class="field"><label>Password</label><input id="loginPass" type="password" placeholder="Enter password"></div>
+    <label class="remember"><input type="checkbox" id="rememberMe"> Keep me signed in on this device</label>
+    <div class="err" id="loginErr">Please enter your ID/username and password.</div>
+    <button class="btn-primary" onclick="doLogin()">Log In</button>
+    <div class="login-hint">Student demo: <strong>student / student</strong> &nbsp;•&nbsp; Admin demo: <strong>admin / admin</strong></div>
+    <div class="login-links">
+      <span>This portal is a local demo for survey and presentation purposes.</span>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+<div class="shell">
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-row">
+        <img id="sideLogoImg" class="brand-logo-img" alt="St. Vincent College of Cabuyao logo">
+        <div><h1>SVCC Portal</h1><span id="brandRole">Student View • Demo</span></div>
+      </div>
+    </div>
+    <div class="nav-item active" data-role="student" data-sec="dashboard" onclick="showSec('dashboard')"><span class="nav-icon">▦</span>Dashboard</div>
+    <div class="nav-item" data-role="student" data-sec="grades" onclick="showSec('grades')"><span class="nav-icon">◇</span>Grades</div>
+    <div class="nav-item" data-role="student" data-sec="calendar" onclick="showSec('calendar')"><span class="nav-icon">◷</span>Event Calendar</div>
+    <div class="nav-item" data-role="student" data-sec="scheduler" onclick="showSec('scheduler')"><span class="nav-icon">▤</span>Scheduler</div>
+    <div class="nav-item" data-role="student" data-sec="lostfound" onclick="showSec('lostfound')"><span class="nav-icon">◎</span>Lost &amp; Found</div>
+    <div class="nav-item" data-role="student" data-sec="tuition" onclick="showSec('tuition')"><span class="nav-icon">₱</span>Tuition &amp; Payment</div>
+    <div class="nav-item" data-role="student" data-sec="uniform" onclick="showSec('uniform')"><span class="nav-icon">⛁</span>Uniform Order</div>
+
+    <div class="nav-item" data-role="admin" data-sec="admindash" onclick="showSec('admindash')"><span class="nav-icon">▦</span>Admin Dashboard</div>
+    <div class="nav-item" data-role="admin" data-sec="manageStudents" onclick="showSec('manageStudents')"><span class="nav-icon">☑</span>Manage Students</div>
+    <div class="nav-item" data-role="admin" data-sec="manageGrades" onclick="showSec('manageGrades')"><span class="nav-icon">◇</span>Manage Grades</div>
+    <div class="nav-item" data-role="admin" data-sec="manageCalendar" onclick="showSec('manageCalendar')"><span class="nav-icon">◷</span>Manage Calendar</div>
+    <div class="nav-item" data-role="admin" data-sec="manageScheduler" onclick="showSec('manageScheduler')"><span class="nav-icon">▤</span>Manage Scheduler</div>
+    <div class="nav-item" data-role="admin" data-sec="manageLF" onclick="showSec('manageLF')"><span class="nav-icon">◎</span>Manage Lost &amp; Found</div>
+    <div class="nav-item" data-role="admin" data-sec="manageTuition" onclick="showSec('manageTuition')"><span class="nav-icon">₱</span>Manage Tuition</div>
+    <div class="nav-item" data-role="admin" data-sec="manageUniform" onclick="showSec('manageUniform')"><span class="nav-icon">⛁</span>Manage Uniform Orders</div>
+    <div class="logout-wrap"><button onclick="doLogout()">Log Out</button></div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h2 id="topTitle">Dashboard</h2>
+      <div class="userchip"><div class="avatar" id="avatarLetter">S</div><span id="userLabel">Student</span></div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="sec" id="sec-dashboard">
+        <div class="grid" style="margin-bottom:18px;">
+          <div class="stat"><div class="num">1.68</div><div class="lbl">General Weighted Average</div></div>
+          <div class="stat"><div class="num">₱8,500</div><div class="lbl">Tuition Balance Due</div></div>
+          <div class="stat"><div class="num">3</div><div class="lbl">Upcoming Events</div></div>
+          <div class="stat"><div class="num">5</div><div class="lbl">Classes Today</div></div>
+        </div>
+        <div class="card">
+          <h3>Quick actions</h3>
+          <div class="row-flex" style="margin-top:10px;">
+            <button class="btn maroon" onclick="showSec('grades')">View Grades</button>
+            <button class="btn" onclick="showSec('tuition')">Pay Tuition</button>
+            <button class="btn" onclick="showSec('lostfound')">Report Lost Item</button>
+            <button class="btn gold" onclick="showSec('uniform')">Order Uniform</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Next up on your calendar</h3>
+          <div id="dashUpcoming"></div>
+        </div>
+      </div>
+
+      <!-- GRADES -->
+      <div class="sec hide" id="sec-grades">
+        <div class="card">
+          <h3>Current Semester Grades</h3>
+          <table><thead><tr><th>Subject</th><th>Units</th><th>Midterm</th><th>Finals</th><th>Status</th></tr></thead>
+          <tbody id="gradesBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div class="sec hide" id="sec-calendar">
+        <div class="card">
+          <h3>School Events &amp; Deadlines</h3>
+          <div id="eventList"></div>
+        </div>
+      </div>
+
+      <!-- SCHEDULER -->
+      <div class="sec hide" id="sec-scheduler">
+        <div class="card">
+          <h3>My Weekly Class Schedule</h3>
+          <p style="font-size:.8rem;color:var(--grey-text);margin:0 0 12px;">This is your own schedule — click any slot to add, change, or clear it.</p>
+          <div class="sched-grid" id="schedGrid"></div>
+        </div>
+      </div>
+
+      <!-- LOST & FOUND -->
+      <div class="sec hide" id="sec-lostfound">
+        <div class="card">
+          <h3>Report an item</h3>
+          <div class="form-row">
+            <div><label class="small">Type</label>
+              <select id="lfType"><option>Lost</option><option>Found</option></select>
+            </div>
+            <div><label class="small">Item name</label><input id="lfName" placeholder="e.g. Blue umbrella"></div>
+          </div>
+          <div class="form-row">
+            <div><label class="small">Location</label><input id="lfLoc" placeholder="e.g. Library, 2nd flr"></div>
+            <div><label class="small">Contact</label><input id="lfContact" placeholder="Messenger / number"></div>
+          </div>
+          <button class="btn maroon" onclick="addLF()">Submit Report</button>
+        </div>
+        <div class="card">
+          <h3>Recent reports</h3>
+          <div id="lfList"></div>
+        </div>
+      </div>
+
+      <!-- TUITION -->
+      <div class="sec hide" id="sec-tuition">
+        <div class="card">
+          <h3>Tuition Balance</h3>
+          <div class="progress-bar"><div class="progress-fill" style="width:66%"></div></div>
+          <p style="font-size:.8rem;color:var(--grey-text);margin:0 0 12px;">₱17,000 paid of ₱25,500 total (66%)</p>
+          <div class="grid">
+            <div class="stat"><div class="num">₱8,500</div><div class="lbl">Remaining balance</div></div>
+            <div class="stat"><div class="num">Oct 15</div><div class="lbl">Next due date</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Make a payment</h3>
+          <div class="form-row">
+            <div><label class="small">Amount (₱)</label><input id="payAmt" type="number" placeholder="8500"></div>
+            <div><label class="small">Payment method</label>
+              <select id="payMethod"><option>GCash</option><option>Bank Transfer</option><option>Credit/Debit Card</option><option>Over-the-counter</option></select>
+            </div>
+          </div>
+          <div class="form-row full">
+            <div><label class="small">Upload receipt (proof of payment)</label><input id="payReceipt" type="file" accept="image/*,.pdf"></div>
+          </div>
+          <button class="btn gold" onclick="payTuition()">Pay Now</button>
+          <p id="payMsg" style="font-size:.8rem;color:#2E7D32;margin-top:10px;display:none;">✓ Payment recorded — thank you!</p>
+        </div>
+        <div class="card">
+          <h3>Your payment history</h3>
+          <div id="paymentHistoryList"></div>
+        </div>
+      </div>
+
+      <!-- UNIFORM -->
+      <div class="sec hide" id="sec-uniform">
+        <div class="card">
+          <h3>Order uniform</h3>
+          <div class="form-row">
+            <div><label class="small">Item</label>
+              <select id="unItem"><option>PE Uniform (Top)</option><option>PE Uniform (Jogging pants)</option><option>Polo (Male)</option><option>Blouse (Female)</option><option>School Vest</option></select>
+            </div>
+            <div><label class="small">Size</label>
+              <select id="unSize"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div><label class="small">Quantity</label><input id="unQty" type="number" value="1" min="1"></div>
+            <div><label class="small">Pickup or Delivery</label>
+              <select id="unMode"><option>Pickup at Campus</option><option>Home Delivery</option></select>
+            </div>
+          </div>
+          <button class="btn maroon" onclick="addOrder()">Place Order</button>
+        </div>
+        <div class="card">
+          <h3>Your orders</h3>
+          <div id="orderList"></div>
+        </div>
+      </div>
+
+      <!-- ADMIN DASHBOARD -->
+      <div class="sec hide" id="sec-admindash">
+        <div class="grid" style="margin-bottom:18px;">
+          <div class="stat"><div class="num" id="admStatStudents">0</div><div class="lbl">Registered students</div></div>
+          <div class="stat"><div class="num" id="admStatLF">0</div><div class="lbl">Open Lost &amp; Found reports</div></div>
+          <div class="stat"><div class="num" id="admStatOrders">0</div><div class="lbl">Pending uniform orders</div></div>
+          <div class="stat"><div class="num" id="admStatEvents">0</div><div class="lbl">Upcoming events</div></div>
+        </div>
+        <div class="card">
+          <h3>Administrator controls</h3>
+          <p style="font-size:.8rem;color:var(--grey-text);margin:0 0 12px;">Manage every part of the portal from here — accounts, academic records, the school calendar, class schedules, lost &amp; found, tuition, and uniform orders.</p>
+          <div class="row-flex">
+            <button class="btn maroon" onclick="showSec('manageStudents')">Manage Students</button>
+            <button class="btn" onclick="showSec('manageGrades')">Manage Grades</button>
+            <button class="btn" onclick="showSec('manageCalendar')">Manage Calendar</button>
+            <button class="btn gold" onclick="showSec('manageUniform')">Review Uniform Orders</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MANAGE STUDENTS (admin only) -->
+      <div class="sec hide" id="sec-manageStudents">
+        <div class="card">
+          <h3>Create a student account</h3>
+          <p style="font-size:.8rem;color:var(--grey-text);margin:0 0 12px;">Only admins can grant students access to the portal. New accounts can log in immediately.</p>
+          <div class="form-row">
+            <div><label class="small">Full name</label><input id="accName" placeholder="e.g. Juan Dela Cruz"></div>
+            <div><label class="small">Student ID / Username</label><input id="accUser" placeholder="e.g. 2024-00987"></div>
+          </div>
+          <div class="form-row">
+            <div><label class="small">Temporary password</label><input id="accPass" placeholder="e.g. Welcome#2026"></div>
+            <div><label class="small">Course &amp; Year</label><input id="accCourse" placeholder="e.g. BSIT - 2nd Year"></div>
+          </div>
+          <button class="btn maroon" onclick="createAccount()">Create Account</button>
+          <p id="accMsg" style="font-size:.8rem;color:#2E7D32;margin-top:10px;display:none;"></p>
+        </div>
+        <div class="card">
+          <h3>All accounts</h3>
+          <table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Course/Year</th><th>Status</th><th></th></tr></thead>
+          <tbody id="accountsBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- MANAGE GRADES (admin only) -->
+      <div class="sec hide" id="sec-manageGrades">
+        <div class="card">
+          <h3>Select a student to view or edit grades</h3>
+          <div id="gradesStudentList"></div>
+        </div>
+      </div>
+
+      <!-- MANAGE CALENDAR (admin only) -->
+      <div class="sec hide" id="sec-manageCalendar">
+        <div class="card">
+          <h3>Add a school event</h3>
+          <div class="form-row">
+            <div><label class="small">Day</label><input id="evDay" placeholder="e.g. 05"></div>
+            <div><label class="small">Month</label><input id="evMonth" placeholder="e.g. NOV"></div>
+          </div>
+          <div class="form-row">
+            <div><label class="small">Event title</label><input id="evTitle" placeholder="e.g. Career Fair"></div>
+            <div><label class="small">Location</label><input id="evLoc" placeholder="e.g. Main Gymnasium"></div>
+          </div>
+          <button class="btn maroon" onclick="addEvent()">Add Event</button>
+        </div>
+        <div class="card">
+          <h3>All events</h3>
+          <div id="manageEventList"></div>
+        </div>
+      </div>
+
+      <!-- MANAGE SCHEDULER (admin only) -->
+      <div class="sec hide" id="sec-manageScheduler">
+        <div class="card">
+          <h3>Select a student to view or edit their schedule</h3>
+          <div id="schedStudentList"></div>
+        </div>
+      </div>
+
+      <!-- MANAGE LOST & FOUND (admin only) -->
+      <div class="sec hide" id="sec-manageLF">
+        <div class="card">
+          <h3>All lost &amp; found reports</h3>
+          <div id="manageLFList"></div>
+        </div>
+      </div>
+
+      <!-- MANAGE TUITION (admin only) -->
+      <div class="sec hide" id="sec-manageTuition">
+        <div class="card">
+          <h3>Update tuition record</h3>
+          <div class="form-row">
+            <div><label class="small">Total tuition (₱)</label><input id="tTotal" type="number"></div>
+            <div><label class="small">Amount paid (₱)</label><input id="tPaid" type="number"></div>
+          </div>
+          <div class="form-row full">
+            <div><label class="small">Next due date</label><input id="tDue" placeholder="e.g. Oct 15"></div>
+          </div>
+          <button class="btn maroon" onclick="updateTuition()">Save Changes</button>
+          <p id="tMsg" style="font-size:.8rem;color:#2E7D32;margin-top:10px;display:none;">✓ Tuition record updated.</p>
+        </div>
+        <div class="card">
+          <h3>Submitted payment receipts</h3>
+          <div id="allReceiptsList"></div>
+        </div>
+      </div>
+
+      <!-- MANAGE UNIFORM ORDERS (admin only) -->
+      <div class="sec hide" id="sec-manageUniform">
+        <div class="card">
+          <h3>All uniform orders</h3>
+          <table><thead><tr><th>Student</th><th>Item</th><th>Size</th><th>Qty</th><th>Fulfillment</th><th>Status</th><th></th></tr></thead>
+          <tbody id="manageOrdersBody"></tbody></table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="modal-overlay hide" id="gradesModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="gradesModalTitle">Grades</h3><button class="modal-close" onclick="closeModal('gradesModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div><label class="small">Subject</label><input id="mgSubject" placeholder="e.g. Database Systems"></div>
+        <div><label class="small">Units</label><input id="mgUnits" type="number" placeholder="3"></div>
+      </div>
+      <div class="form-row">
+        <div><label class="small">Midterm</label><input id="mgMid" placeholder="1.75"></div>
+        <div><label class="small">Final</label><input id="mgFinal" placeholder="1.50"></div>
+      </div>
+      <button class="btn maroon" onclick="addGradeModal()">Add Subject</button>
+      <table style="margin-top:14px;"><thead><tr><th>Subject</th><th>Units</th><th>Mid</th><th>Final</th><th>Status</th><th></th></tr></thead><tbody id="gradesModalBody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hide" id="schedModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="schedModalTitle">Schedule</h3><button class="modal-close" onclick="closeModal('schedModal')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:.8rem;color:var(--grey-text);margin:0 0 12px;">Click a slot to edit or clear it.</p>
+      <div class="sched-grid" id="schedModalGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let role = 'student';
+let currentUser = null;
+const defaultUsers = [
+  {name:'Demo Student', username:'student', password:'student', role:'student', course:'BSBA - 2nd Year', status:'Active'},
+  {name:'Demo Administrator', username:'admin', password:'admin', role:'admin', course:'SVCC Administration', status:'Active'},
+];
+let users = [];
+function loadUsers(){
+  // Keep the survey/demo credentials fixed so the system can always be tested.
+  try{
+    const saved = localStorage.getItem('svccUsers');
+    const savedUsers = saved ? JSON.parse(saved) : [];
+    const extras = Array.isArray(savedUsers) ? savedUsers.filter(a => a && a.username !== 'student' && a.username !== 'admin') : [];
+    users = defaultUsers.concat(extras);
+    saveUsers();
+  }catch(err){ users = defaultUsers.slice(); }
+}
+function saveUsers(){
+  try{ localStorage.setItem('svccUsers', JSON.stringify(users)); }catch(err){}
+}
+loadUsers();
+
+const SCHOOL_LOGO = "data:image/jpeg;base64,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";
+function applyEmbeddedLogo(){
+  document.getElementById('loginLogoImg').src = SCHOOL_LOGO;
+  document.getElementById('sideLogoImg').src = SCHOOL_LOGO;
+}
+applyEmbeddedLogo();
+
+function setRole(r){
+  role = r;
+  document.getElementById('roleStudentBtn').classList.toggle('active', r==='student');
+  document.getElementById('roleAdminBtn').classList.toggle('active', r==='admin');
+}
+function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  const errEl = document.getElementById('loginErr');
+  if(!u || !p){ errEl.textContent = 'Please enter your ID/username and password.'; errEl.style.display='block'; return; }
+  const match = users.find(acc => acc.username.toLowerCase() === u.toLowerCase() && acc.password === p && acc.role === role);
+  if(!match){ errEl.textContent = 'Invalid username or password for the selected account type.'; errEl.style.display='block'; return; }
+  if(match.status === 'Disabled'){ errEl.textContent = 'This account has been disabled. Please contact the admin office.'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  currentUser = match;
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('brandRole').textContent = role==='admin' ? 'Admin View' : 'Student View';
+  document.getElementById('userLabel').textContent = (role==='admin'?'Admin: ':'Student: ') + match.name;
+  document.getElementById('avatarLetter').textContent = match.name.charAt(0).toUpperCase();
+  document.querySelectorAll('.nav-item').forEach(n=>{ n.style.display = n.dataset.role===role ? '' : 'none'; });
+  render();
+  showSec(role==='admin' ? 'admindash' : 'dashboard');
+}
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='flex';
+  document.getElementById('loginUser').value=''; document.getElementById('loginPass').value='';
+}
+function showSec(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.add('hide'));
+  document.getElementById('sec-'+id).classList.remove('hide');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.sec===id));
+  const titles = {dashboard:'Dashboard',grades:'Grades',calendar:'Event Calendar',scheduler:'Scheduler',lostfound:'Lost & Found',tuition:'Tuition & Payment',uniform:'Uniform Order',admindash:'Admin Dashboard',manageStudents:'Manage Students',manageGrades:'Manage Grades',manageCalendar:'Manage Calendar',manageScheduler:'Manage Scheduler',manageLF:'Manage Lost & Found',manageTuition:'Manage Tuition',manageUniform:'Manage Uniform Orders'};
+  document.getElementById('topTitle').textContent = titles[id];
+}
+
+function loadState(key, fallback){
+  try{ const s = localStorage.getItem(key); return s ? JSON.parse(s) : fallback; }catch(e){ return fallback; }
+}
+function saveState(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+const defaultGradesTemplate = [
+  {id:1, subject:'Data Structures & Algorithms', units:3, mid:'1.50', final:'1.75', status:'Passed'},
+  {id:2, subject:'Software Engineering', units:3, mid:'2.00', final:'1.75', status:'Passed'},
+  {id:3, subject:'Networking Fundamentals', units:3, mid:'1.75', final:'1.50', status:'Passed'},
+  {id:4, subject:'Philippine History', units:3, mid:'1.25', final:'1.50', status:'Passed'},
+  {id:5, subject:'Physical Education 3', units:2, mid:'1.00', final:'1.00', status:'Passed'},
+];
+const defaultScheduleTemplate = {
+  Mon:['Data Structures','—','Networking','—','PE 3'],
+  Tue:['—','Software Eng','—','Phil. History','—'],
+  Wed:['Data Structures','—','Networking','—','PE 3'],
+  Thu:['—','Software Eng','—','Phil. History','—'],
+  Fri:['Data Structures','Consult Hours','—','—','—'],
+};
+let gradesByStudent = loadState('svccGradesByStudent', {});
+let schedulesByStudent = loadState('svccSchedulesByStudent', {});
+function getGrades(username){
+  if(!gradesByStudent[username]){
+    gradesByStudent[username] = JSON.parse(JSON.stringify(defaultGradesTemplate));
+    saveState('svccGradesByStudent', gradesByStudent);
+  }
+  return gradesByStudent[username];
+}
+function getSchedule(username){
+  if(!schedulesByStudent[username]){
+    schedulesByStudent[username] = JSON.parse(JSON.stringify(defaultScheduleTemplate));
+    saveState('svccSchedulesByStudent', schedulesByStudent);
+  }
+  return schedulesByStudent[username];
+}
+let modalStudentUsername = null;
+function closeModal(id){ document.getElementById(id).classList.add('hide'); }
+let tuition = loadState('svccTuition', {total:25500, paid:17000, due:'Oct 15'});
+let events = loadState('svccEvents', [
+  {id:1, d:'02', m:'OCT', t:'Midterm Examinations Begin', loc:'All departments'},
+  {id:2, d:'09', m:'OCT', t:'Intramurals Sports Fest', loc:'Main Gymnasium'},
+  {id:3, d:'15', m:'OCT', t:'Tuition 2nd Installment Deadline', loc:'Accounting Office'},
+  {id:4, d:'28', m:'OCT', t:'Foundation Day Program', loc:'Covered Court'},
+]);
+let paymentHistory = loadState('svccPayments', []);
+let lfPosts = loadState('svccLF', [
+  {id:1, type:'Found', name:'Black wallet', loc:'Canteen area', contact:'Guard on duty', status:'Open'},
+  {id:2, type:'Lost', name:'Casio Scientific Calculator', loc:'Room 302', contact:'FB: J. Reyes', status:'Open'},
+]);
+let orders = loadState('svccOrders', []);
+
+function render(){
+  document.getElementById('dashUpcoming').innerHTML = events.slice(0,2).map(evtHtml).join('');
+  if(currentUser){
+    document.getElementById('gradesBody').innerHTML = getGrades(currentUser.username).map(g=>`<tr><td>${g.subject}</td><td>${g.units}</td><td>${g.mid}</td><td>${g.final}</td><td><span class="badge b-green">${g.status}</span></td></tr>`).join('');
+  }
+  document.getElementById('eventList').innerHTML = events.map(evtHtml).join('');
+  renderSchedule();
+  renderLF();
+  renderOrders();
+  renderTuitionView();
+  renderPaymentHistory();
+  if(role==='admin'){
+    renderAccounts();
+    renderGradesStudentList();
+    renderManageEvents();
+    renderSchedStudentList();
+    renderManageLF();
+    renderManageOrders();
+    renderAdminStats();
+    renderAllReceipts();
+    document.getElementById('tTotal').value = tuition.total;
+    document.getElementById('tPaid').value = tuition.paid;
+    document.getElementById('tDue').value = tuition.due;
+  }
+}
+function renderTuitionView(){
+  const pct = Math.min(100, Math.round((tuition.paid/tuition.total)*100));
+  const bal = tuition.total - tuition.paid;
+  document.querySelector('#sec-tuition .progress-fill').style.width = pct+'%';
+  document.querySelector('#sec-tuition .card p').textContent = `₱${tuition.paid.toLocaleString()} paid of ₱${tuition.total.toLocaleString()} total (${pct}%)`;
+  const stats = document.querySelectorAll('#sec-tuition .stat .num');
+  stats[0].textContent = '₱'+bal.toLocaleString();
+  stats[1].textContent = tuition.due;
+  const dashStats = document.querySelectorAll('#sec-dashboard .stat .num');
+  if(dashStats[1]) dashStats[1].textContent = '₱'+bal.toLocaleString();
+}
+function evtHtml(e){
+  return `<div class="evt"><div class="date"><b>${e.d}</b><span>${e.m}</span></div><div><strong>${e.t}</strong><div class="meta" style="color:var(--grey-text);font-size:.78rem;">${e.loc}</div></div></div>`;
+}
+function renderSchedule(){
+  if(!currentUser) return;
+  document.getElementById('schedGrid').innerHTML = buildSchedGridHtml(getSchedule(currentUser.username), true, 'editOwnSlot');
+}
+function editOwnSlot(day, idx){
+  const sched = getSchedule(currentUser.username);
+  const current = sched[day][idx];
+  const val = prompt('Enter subject/activity for this slot (leave blank to clear):', current==='—'?'':current);
+  if(val===null) return;
+  sched[day][idx] = val.trim() || '—';
+  saveState('svccSchedulesByStudent', schedulesByStudent);
+  renderSchedule();
+}
+function buildSchedGridHtml(sched, editable, editFn){
+  const days = Object.keys(sched);
+  let html = `<div class="cell head"></div>` + days.map(d=>`<div class="cell head">${d}</div>`).join('');
+  const slots = ['7-9','9-11','11-1','1-3','3-5'];
+  for(let i=0;i<5;i++){
+    html += `<div class="cell time">${slots[i]}</div>`;
+    days.forEach(d=>{
+      const val = sched[d][i];
+      const click = editable ? ` onclick="${editFn}('${d}',${i})" style="cursor:pointer;"` : '';
+      html += `<div class="cell"${click}>${val==='—'?'':`<div class="cls">${val}</div>`}</div>`;
+    });
+  }
+  return html;
+}
+function renderSchedStudentList(){
+  const el = document.getElementById('schedStudentList');
+  if(!el) return;
+  const studs = users.filter(u=>u.role==='student');
+  el.innerHTML = studs.length ? studs.map(s=>`<div class="lf-item student-row"><div><strong>${s.name}</strong><div class="meta">${s.username} · ${s.course}</div></div><button class="btn maroon" onclick="openSchedModal('${s.username}')">View / Edit Schedule</button></div>`).join('') : '<div class="empty">No student accounts yet.</div>';
+}
+function openSchedModal(username){
+  modalStudentUsername = username;
+  const acc = users.find(u=>u.username===username);
+  document.getElementById('schedModalTitle').textContent = 'Schedule — '+acc.name;
+  renderSchedModalGrid();
+  document.getElementById('schedModal').classList.remove('hide');
+}
+function renderSchedModalGrid(){
+  document.getElementById('schedModalGrid').innerHTML = buildSchedGridHtml(getSchedule(modalStudentUsername), true, 'editModalSlot');
+}
+function editModalSlot(day, idx){
+  const sched = getSchedule(modalStudentUsername);
+  const current = sched[day][idx];
+  const val = prompt('Enter subject/activity for this slot (leave blank to clear):', current==='—'?'':current);
+  if(val===null) return;
+  sched[day][idx] = val.trim() || '—';
+  saveState('svccSchedulesByStudent', schedulesByStudent);
+  renderSchedModalGrid();
+  if(currentUser && currentUser.username===modalStudentUsername) renderSchedule();
+}
+function addLF(){
+  const type = document.getElementById('lfType').value;
+  const name = document.getElementById('lfName').value.trim();
+  const loc = document.getElementById('lfLoc').value.trim();
+  const contact = document.getElementById('lfContact').value.trim();
+  if(!name) return;
+  lfPosts.unshift({id:Date.now(), type, name, loc:loc||'Not specified', contact:contact||'See admin office', status:'Open'});
+  saveState('svccLF', lfPosts);
+  document.getElementById('lfName').value=''; document.getElementById('lfLoc').value=''; document.getElementById('lfContact').value='';
+  renderLF();
+}
+function renderLF(){
+  document.getElementById('lfList').innerHTML = lfPosts.length ? lfPosts.map(p=>`<div class="lf-item"><span class="badge ${p.type==='Lost'?'b-red':'b-green'}">${p.type}</span> <span class="badge ${p.status==='Open'?'b-amber':'b-green'}">${p.status}</span> <strong>${p.name}</strong><div class="meta">📍 ${p.loc} · ✉ ${p.contact}</div></div>`).join('') : '<div class="empty">No reports yet.</div>';
+}
+function renderManageLF(){
+  const el = document.getElementById('manageLFList');
+  if(!el) return;
+  el.innerHTML = lfPosts.length ? lfPosts.map(p=>`<div class="lf-item"><span class="badge ${p.type==='Lost'?'b-red':'b-green'}">${p.type}</span> <span class="badge ${p.status==='Open'?'b-amber':'b-green'}">${p.status}</span> <strong>${p.name}</strong><div class="meta">📍 ${p.loc} · ✉ ${p.contact}</div><div class="row-flex" style="margin-top:8px;"><button class="btn" style="padding:5px 10px;font-size:.72rem;" onclick="toggleLFStatus(${p.id})">${p.status==='Open'?'Mark Resolved':'Reopen'}</button><button class="btn" style="padding:5px 10px;font-size:.72rem;color:#B3261E;" onclick="deleteLF(${p.id})">Delete</button></div></div>`).join('') : '<div class="empty">No reports yet.</div>';
+}
+function toggleLFStatus(id){
+  const p = lfPosts.find(x=>x.id===id);
+  if(!p) return;
+  p.status = p.status==='Open' ? 'Resolved' : 'Open';
+  saveState('svccLF', lfPosts);
+  renderLF(); renderManageLF(); renderAdminStats();
+}
+function deleteLF(id){
+  lfPosts = lfPosts.filter(x=>x.id!==id);
+  saveState('svccLF', lfPosts);
+  renderLF(); renderManageLF(); renderAdminStats();
+}
+function payTuition(){
+  const amt = parseFloat(document.getElementById('payAmt').value);
+  const method = document.getElementById('payMethod').value;
+  const fileInput = document.getElementById('payReceipt');
+  const file = fileInput.files[0];
+  if(!amt || amt<=0) return;
+  const finalize = (receiptData)=>{
+    tuition.paid = Math.min(tuition.total, tuition.paid + amt);
+    saveState('svccTuition', tuition);
+    paymentHistory.unshift({id:Date.now(), student: currentUser ? currentUser.name : 'Student', amt, method, date: new Date().toLocaleDateString(), receipt: receiptData || null});
+    saveState('svccPayments', paymentHistory);
+    document.getElementById('payMsg').style.display='block';
+    document.getElementById('payMsg').textContent = `✓ Payment of ₱${amt.toLocaleString()} recorded — thank you!`;
+    document.getElementById('payAmt').value=''; fileInput.value='';
+    renderTuitionView(); renderPaymentHistory(); renderAllReceipts();
+  };
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e => finalize(e.target.result);
+    reader.readAsDataURL(file);
+  } else {
+    finalize(null);
+  }
+}
+function renderPaymentHistory(){
+  const el = document.getElementById('paymentHistoryList');
+  if(!el) return;
+  const mine = currentUser ? paymentHistory.filter(p=>p.student===currentUser.name) : paymentHistory;
+  el.innerHTML = mine.length ? mine.map(p=>`<div class="lf-item"><strong>₱${p.amt.toLocaleString()}</strong> · ${p.method} <div class="meta">${p.date}${p.receipt?` · <a href="${p.receipt}" target="_blank">View receipt</a>`:' · No receipt uploaded'}</div></div>`).join('') : '<div class="empty">No payments recorded yet.</div>';
+}
+function renderAllReceipts(){
+  const el = document.getElementById('allReceiptsList');
+  if(!el) return;
+  el.innerHTML = paymentHistory.length ? paymentHistory.map(p=>`<div class="lf-item"><strong>${p.student}</strong> — ₱${p.amt.toLocaleString()} · ${p.method}<div class="meta">${p.date}${p.receipt?` · <a href="${p.receipt}" target="_blank">View receipt</a>`:' · No receipt uploaded'}</div></div>`).join('') : '<div class="empty">No payments submitted yet.</div>';
+}
+function updateTuition(){
+  const total = parseFloat(document.getElementById('tTotal').value);
+  const paid = parseFloat(document.getElementById('tPaid').value);
+  const due = document.getElementById('tDue').value.trim();
+  if(!total || paid==null || !due) return;
+  tuition = {total, paid, due};
+  saveState('svccTuition', tuition);
+  document.getElementById('tMsg').style.display='block';
+  renderTuitionView();
+}
+function createAccount(){
+  const name = document.getElementById('accName').value.trim();
+  const uname = document.getElementById('accUser').value.trim();
+  const pass = document.getElementById('accPass').value.trim();
+  const course = document.getElementById('accCourse').value.trim();
+  const msg = document.getElementById('accMsg');
+  if(!name || !uname || !pass){ msg.style.color='#B3261E'; msg.textContent='Please fill in name, username, and password.'; msg.style.display='block'; return; }
+  if(users.some(a=>a.username.toLowerCase()===uname.toLowerCase())){ msg.style.color='#B3261E'; msg.textContent='That username already exists.'; msg.style.display='block'; return; }
+  users.push({name, username:uname, password:pass, role:'student', course:course||'Not specified', status:'Active'});
+  saveUsers();
+  document.getElementById('accName').value=''; document.getElementById('accUser').value=''; document.getElementById('accPass').value=''; document.getElementById('accCourse').value='';
+  msg.style.color='#2E7D32'; msg.textContent = `Account created for ${name}. They can log in now with the credentials you set.`; msg.style.display='block';
+  renderAccounts();
+  renderAdminStats();
+  renderGradesStudentList();
+  renderSchedStudentList();
+}
+function toggleAccountStatus(username){
+  const acc = users.find(a=>a.username===username);
+  if(!acc) return;
+  acc.status = acc.status==='Active' ? 'Disabled' : 'Active';
+  saveUsers();
+  renderAccounts();
+}
+function removeAccount(username){
+  users = users.filter(a=>a.username!==username);
+  saveUsers();
+  renderAccounts();
+  renderAdminStats();
+  renderGradesStudentList();
+  renderSchedStudentList();
+}
+function renderAccounts(){
+  const body = document.getElementById('accountsBody');
+  if(!body) return;
+  body.innerHTML = users.map(a=>`<tr><td>${a.name}</td><td>${a.username}</td><td><span class="badge ${a.role==='admin'?'b-maroon':'b-green'}">${a.role}</span></td><td>${a.course}</td><td><span class="badge ${a.status==='Active'?'b-green':'b-red'}">${a.status}</span></td><td><div class="row-flex"><button class="btn" style="padding:5px 10px;font-size:.72rem;" onclick="editAccount('${a.username}')">Edit</button>${a.role!=='admin'?`<button class="btn" style="padding:5px 10px;font-size:.72rem;" onclick="toggleAccountStatus('${a.username}')">${a.status==='Active'?'Disable':'Enable'}</button><button class="btn" style="padding:5px 10px;font-size:.72rem;color:#B3261E;" onclick="removeAccount('${a.username}')">Remove</button>`:''}</div></td></tr>`).join('');
+}
+function editAccount(username){
+  const acc = users.find(a=>a.username===username);
+  if(!acc) return;
+  const newUser = prompt('Update username for '+acc.name+':', acc.username);
+  if(newUser===null) return;
+  const trimmedUser = newUser.trim();
+  if(!trimmedUser){ alert('Username cannot be empty.'); return; }
+  if(trimmedUser.toLowerCase()!==acc.username.toLowerCase() && users.some(a=>a.username.toLowerCase()===trimmedUser.toLowerCase())){
+    alert('That username is already taken.'); return;
+  }
+  const newPass = prompt('Set a new password for '+acc.name+' (leave blank to keep current):', '');
+  acc.username = trimmedUser;
+  if(newPass && newPass.trim()) acc.password = newPass.trim();
+  saveUsers();
+  renderAccounts();
+  alert('Account updated. New login: '+acc.username);
+}
+function renderGradesStudentList(){
+  const el = document.getElementById('gradesStudentList');
+  if(!el) return;
+  const studs = users.filter(u=>u.role==='student');
+  el.innerHTML = studs.length ? studs.map(s=>`<div class="lf-item student-row"><div><strong>${s.name}</strong><div class="meta">${s.username} · ${s.course}</div></div><button class="btn maroon" onclick="openGradesModal('${s.username}')">View / Edit Grades</button></div>`).join('') : '<div class="empty">No student accounts yet.</div>';
+}
+function openGradesModal(username){
+  modalStudentUsername = username;
+  const acc = users.find(u=>u.username===username);
+  document.getElementById('gradesModalTitle').textContent = 'Grades — '+acc.name;
+  renderGradesModalTable();
+  document.getElementById('gradesModal').classList.remove('hide');
+}
+function renderGradesModalTable(){
+  const list = getGrades(modalStudentUsername);
+  document.getElementById('gradesModalBody').innerHTML = list.length ? list.map(g=>`<tr><td>${g.subject}</td><td>${g.units}</td><td>${g.mid}</td><td>${g.final}</td><td><span class="badge b-green">${g.status}</span></td><td><button class="btn" style="padding:5px 10px;font-size:.72rem;color:#B3261E;" onclick="deleteGradeModal(${g.id})">Delete</button></td></tr>`).join('') : '<tr><td colspan="6" style="color:var(--grey-text);">No subjects yet.</td></tr>';
+}
+function addGradeModal(){
+  const subject = document.getElementById('mgSubject').value.trim();
+  const units = document.getElementById('mgUnits').value.trim();
+  const mid = document.getElementById('mgMid').value.trim();
+  const final = document.getElementById('mgFinal').value.trim();
+  if(!subject || !units) return;
+  getGrades(modalStudentUsername).push({id:Date.now(), subject, units, mid:mid||'—', final:final||'—', status: final ? 'Passed' : 'Ongoing'});
+  saveState('svccGradesByStudent', gradesByStudent);
+  document.getElementById('mgSubject').value=''; document.getElementById('mgUnits').value=''; document.getElementById('mgMid').value=''; document.getElementById('mgFinal').value='';
+  renderGradesModalTable();
+  if(currentUser && currentUser.username===modalStudentUsername) render();
+}
+function deleteGradeModal(id){
+  gradesByStudent[modalStudentUsername] = getGrades(modalStudentUsername).filter(g=>g.id!==id);
+  saveState('svccGradesByStudent', gradesByStudent);
+  renderGradesModalTable();
+  if(currentUser && currentUser.username===modalStudentUsername) render();
+}
+function addEvent(){
+  const d = document.getElementById('evDay').value.trim();
+  const m = document.getElementById('evMonth').value.trim().toUpperCase();
+  const t = document.getElementById('evTitle').value.trim();
+  const loc = document.getElementById('evLoc').value.trim();
+  if(!d || !m || !t) return;
+  events.push({id:Date.now(), d, m, t, loc:loc||'TBA'});
+  saveState('svccEvents', events);
+  document.getElementById('evDay').value=''; document.getElementById('evMonth').value=''; document.getElementById('evTitle').value=''; document.getElementById('evLoc').value='';
+  renderManageEvents(); render();
+}
+function deleteEvent(id){
+  events = events.filter(e=>e.id!==id);
+  saveState('svccEvents', events);
+  renderManageEvents(); render();
+}
+function renderManageEvents(){
+  const el = document.getElementById('manageEventList');
+  if(!el) return;
+  el.innerHTML = events.length ? events.map(e=>`<div class="evt"><div class="date"><b>${e.d}</b><span>${e.m}</span></div><div style="flex:1;"><strong>${e.t}</strong><div class="meta" style="color:var(--grey-text);font-size:.78rem;">${e.loc}</div></div><button class="btn" style="padding:5px 10px;font-size:.72rem;color:#B3261E;height:fit-content;" onclick="deleteEvent(${e.id})">Delete</button></div>`).join('') : '<div class="empty">No events scheduled.</div>';
+}
+function renderAdminStats(){
+  const s1 = document.getElementById('admStatStudents'); if(!s1) return;
+  s1.textContent = users.filter(u=>u.role==='student').length;
+  document.getElementById('admStatLF').textContent = lfPosts.filter(p=>p.status==='Open').length;
+  document.getElementById('admStatOrders').textContent = orders.filter(o=>o.status==='Pending').length;
+  document.getElementById('admStatEvents').textContent = events.length;
+}
+function addOrder(){
+  const item = document.getElementById('unItem').value;
+  const size = document.getElementById('unSize').value;
+  const qty = document.getElementById('unQty').value || 1;
+  const mode = document.getElementById('unMode').value;
+  orders.unshift({id:Date.now(), item, size, qty, mode, status:'Pending', student: currentUser ? currentUser.name : 'Student'});
+  saveState('svccOrders', orders);
+  renderOrders();
+}
+function renderOrders(){
+  const mine = currentUser ? orders.filter(o=>o.student===currentUser.name) : orders;
+  document.getElementById('orderList').innerHTML = mine.length ? `<table><thead><tr><th>Item</th><th>Size</th><th>Qty</th><th>Fulfillment</th><th>Status</th></tr></thead><tbody>${mine.map(o=>`<tr><td>${o.item}</td><td>${o.size}</td><td>${o.qty}</td><td>${o.mode}</td><td><span class="badge b-amber">${o.status}</span></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No orders placed yet.</div>';
+}
+function renderManageOrders(){
+  const el = document.getElementById('manageOrdersBody');
+  if(!el) return;
+  const opts = ['Pending','Approved','Ready for Pickup','Completed'];
+  el.innerHTML = orders.map(o=>`<tr><td>${o.student}</td><td>${o.item}</td><td>${o.size}</td><td>${o.qty}</td><td>${o.mode}</td><td><select onchange="updateOrderStatus(${o.id}, this.value)">${opts.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></td><td><button class="btn" style="padding:5px 10px;font-size:.72rem;color:#B3261E;" onclick="deleteOrder(${o.id})">Delete</button></td></tr>`).join('') || '<tr><td colspan="7" style="color:var(--grey-text);">No orders placed yet.</td></tr>';
+}
+function updateOrderStatus(id, status){
+  const o = orders.find(x=>x.id===id);
+  if(!o) return;
+  o.status = status;
+  saveState('svccOrders', orders);
+  renderOrders(); renderAdminStats();
+}
+function deleteOrder(id){
+  orders = orders.filter(x=>x.id!==id);
+  saveState('svccOrders', orders);
+  renderManageOrders(); renderOrders(); renderAdminStats();
+}
+</script>
+</body>
+</html>
